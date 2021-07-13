@@ -1,6 +1,7 @@
-from utils.vector import vec2
+from types import ClassMethodDescriptorType
 from pygame.constants import *
 import pygame
+from pygame import Vector2 as vec2
 
 # Essa classe é para ser um Singleton, porém ela ainda pode ser
 # instanciada. Como nenhuma instância vai ter variáveis próprias,
@@ -19,15 +20,29 @@ class InputManager:
     K_DOWN: False, 
     K_SPACE: False
   }
+  should_quit = False
 
-  mouse_pos = vec2(0, 0)
-
+  mouse_state = {
+    "position": vec2(0, 0),
+    "pressed" : [False, False, False] 
+  }
+  
   @classmethod
   def poll_events(cls):
-    for event in pygame.events.get():
-      if event.key in cls.pressed_keys:
-        cls.pressed_keys[event.key] = event.type == KEYUP
-    cls.mouse_pos.x, cls.mouse_pos.y = pygame.mouse.get_pos()
+    should_quit = False
+
+    for event in pygame.event.get():
+      should_quit = should_quit or (event.type == pygame.QUIT)
+      
+      if event.type == pygame.KEYDOWN or event.type == pygame.KEYUP:
+        if event.key in cls.pressed_keys:
+          cls.pressed_keys[event.key] = (event.type == KEYDOWN)
+      elif event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.MOUSEBUTTONUP:
+        cls.mouse_state["pressed"][event.button-1] = event.type == pygame.MOUSEBUTTONDOWN
+
+    cls.mouse_state["position"] = pygame.mouse.get_pos()
+
+    return should_quit
 
   @classmethod
   def get_key(cls, key) -> bool:
@@ -37,5 +52,13 @@ class InputManager:
 
   @classmethod
   def get_mouse_pos(cls) -> vec2:
-    return cls.mouse_pos
+    return cls.mouse_state["position"]
+
+  @classmethod
+  def get_mouse_buttons(cls):
+    return cls.mouse_state["pressed"]
+
+  @classmethod
+  def should_quit(cls):
+    return cls.should_quit
     
