@@ -4,12 +4,12 @@
 __AUTHOR__ = "Rafael Vieira Coelho"
 __DATE__ = "19/05/2019"
 
-from bullet import Bullet
+from entities.bullet import Bullet
 import math
 import pygame
 from pygame import Vector2 as vec2
 
-from input_manager import InputManager
+from utils.input_manager import InputManager
 from random import randint 
 
 class Ship():
@@ -18,8 +18,8 @@ class Ship():
 		self.vel = vel
 		
 		# carrega a imagem
-		imagem = pygame.image.load("images/nave.png")
-		self.imagem = pygame.transform.scale(imagem, (40, 60))
+		imagem = pygame.image.load("res/images/nave.png")
+		self.imagem = pygame.transform.scale(imagem, (60, 80))
 
 		self.rect = self.imagem.get_rect()
 		self.rect.centerx = 139
@@ -34,8 +34,6 @@ class Ship():
 		self.MAX_TIROS = 5
 		self.tiros = [None] * self.MAX_TIROS
 		self.angulo = 0
-
-		print(self.tiros)
 
 	# desenha a nave na sua posição atual
 	def desenha(self, tela):
@@ -82,7 +80,6 @@ class Ship():
 		# Se o botão 0 (esquerdo) foi apertado, atiramos
 		if pygame.mouse.get_pressed()[0] and self.pode_atirar:
 			self.atira(vec2(x, y))
-			print(len(self.tiros))
 			self.pode_atirar = False
 
 	def atira(self, mouse):
@@ -101,7 +98,6 @@ class Ship():
 		for i in range(len(self.tiros)):
 			if self.tiros[i] == None:
 				self.tiros[i] = tiro
-				print(self.tiros)
 				return
 
 		if len(self.tiros) >= self.MAX_TIROS:

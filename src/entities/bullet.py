@@ -12,7 +12,7 @@ from pygame import Vector2 as vec2
 _GlobalID = 0
 
 class Bullet:
-	BulletImg = pygame.image.load("images/tiro.png")
+	BulletImg = pygame.image.load("res/images/tiro.png")
 
 	def __init__(self, pos, mouse):
 		# pra eu ter acesso ao _GlobalID

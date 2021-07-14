@@ -3,3 +3,4 @@ class Config:
         self.title = title
         self.width = width
         self.height = height
+        self.delta = 0
