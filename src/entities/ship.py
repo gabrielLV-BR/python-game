@@ -102,7 +102,7 @@ class Ship():
 				if self.frame >= 7:
 					self.frame = 7
 					self.tamanho = 0.4
-					self.angulo += 2
+					self.angulo += 1
 
 			self.imagem = self._explosion_gif[self.frame]
 
@@ -124,9 +124,9 @@ class Ship():
 		novo_tiro = Bullet(self.rect.center, mouse)
 
 		# adiciono o novo_tiro à lista de tiros
-		self.addTiro(novo_tiro)
+		self.add_tiro(novo_tiro)
 	
-	def addTiro(self, tiro: Bullet):
+	def add_tiro(self, tiro: Bullet):
 		# criei minha "própria implementação" pra evitar ficar realocando a memória toda a hora
 		# para não estourar o limite
 

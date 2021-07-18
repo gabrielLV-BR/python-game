@@ -49,16 +49,16 @@ def main():
 		isRunning = not InputManager.poll_events()
 
 		for inimigo in enemyHandler.enemies:
-			if not inimigo: continue
+			if not inimigo or isinstance(inimigo, Frota): continue
 			# Checar se colidiu com tiro
 			for tiro in player.tiros:
 				if not tiro: continue
 				if inimigo.rect.colliderect(tiro.rect):
-					enemyHandler.remove_enemy(inimigo)
+					enemyHandler.kill_enemy(inimigo)
 					player.remove_tiro(tiro)
 					break
 			# Checar se colidiu com player
-			if inimigo.rect.colliderect(player.rect):
+			if inimigo.rect.colliderect(player.rect) and not inimigo.morto:
 				config.player_morto = True
 
 		timer += config.delta

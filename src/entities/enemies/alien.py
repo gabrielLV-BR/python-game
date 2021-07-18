@@ -21,9 +21,9 @@ class Alien(DumbAlien):
 
 	#atualiza a posicao do alien
 	def atualiza(self, config: Config):
-		if not config.player_morto:
+		if not config.player_morto and not self.morto:
 			super().set_target(config.player_pos)
-		else:
+		elif not self.morto:
 			# Pego a distância daqui até o player e inverto ela, para que
 			# a nave vá para longe
 			longe : vec2 = (config.player_pos - self.get_pos()) * -1

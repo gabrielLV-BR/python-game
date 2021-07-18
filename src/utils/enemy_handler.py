@@ -21,19 +21,17 @@ class EnemyHandler:
     def atualiza(self, config: Config):
         self.timer += config.delta
 
-        print(self.enemies)
-
         # # Lógica do spawn de inimigos
         if self.timer > 3000 and not config.player_morto:
             self.spawn_enemy(config)
             self.timer = 0
 
         for enemy in self.enemies:
-            if enemy == None:
+            if (enemy == None):
                 continue
-            if (enemy.rect.centerx > config.width) or (enemy.rect.centerx < 0):
-                self.remove_enemy(enemy)
             enemy.atualiza(config)
+            if enemy.pode_ir():
+                self.remove_enemy(enemy)
 
     def desenha(self, tela):
         for enemy in self.enemies:
@@ -61,12 +59,19 @@ class EnemyHandler:
             if self.enemies[i] == enemy:
                 self.enemies[i] = None
 
-    def spawn_enemy(self, config):
+    def kill_enemy(self, enemy):
+        for i in self.enemies:
+            if i == enemy:
+                enemy.die()
+
+    def spawn_enemy(self, config: Config):
         # coin = randint(0, 10)
+
+        # self.enemies.add_enemy(Frota(vec2(10,10), 5))
 
         # 20% de chance de spawnar uma frota
         # if coin >= 8:
-        # 	enemies.append(Frota(vec2(10, 10), 5))
+        # 	self.enemies.append(Frota(vec2(10, 10), 5))
         # else:
         x = randint(0, config.width)
         y = randint(0, config.height)
