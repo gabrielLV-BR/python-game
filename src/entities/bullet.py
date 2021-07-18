@@ -9,23 +9,13 @@ from random import random
 import pygame
 from pygame import Vector2 as vec2
 
-_GlobalID = 0
+from utils.config import Config
+
 
 class Bullet:
 	BulletImg = pygame.image.load("res/images/tiro.png")
 
-	def __init__(self, pos, mouse):
-		# pra eu ter acesso ao _GlobalID
-		global _GlobalID
-
-		# Isso aqui é pra cada bala ter um ID único, o que facilita na hora
-		# da remoção
-
-		# provavelmente só com o _GlobalID já servia, mas assim é mais uma
-		# garantia
-		self.id = f"{_GlobalID}-{random() * 1000}"
-		_GlobalID += 1
-
+	def __init__(self, pos: vec2, mouse: vec2):
 		# crio um vetor apontando pro mouse
 		tiro_dir = vec2(mouse.x - pos[0], mouse.y - pos[1])
 		
@@ -41,7 +31,7 @@ class Bullet:
 		self.SPEED = 3.0
 		self.vel = tiro_dir * self.SPEED
 
-	def atualiza(self, config):
+	def atualiza(self, config: Config):
 		self.rect.centerx += self.vel.x * 10
 		self.rect.centery += self.vel.y * 10
 	

@@ -9,19 +9,20 @@ __DATE__ = "19/05/2019"
 import pygame
 from pygame import Vector2 as vec2
 
+from random import randint
+from entities.enemies.dumb_alien import DumbAlien
+
 from utils.config import Config
-from entities.ship import Ship
-from entities.alien import Alien
 from utils.input_manager import InputManager
+from utils.enemy_handler import EnemyHandler
+
+from entities.ship import Ship
+from entities.enemies.alien import Alien
+from entities.enemies.frota import Frota
 
 clock = pygame.time.Clock()
 
-inimigos = [Alien(vec2(20, 20))]
-
-delta = 0
-
-
-def createWindow(config):
+def create_window(config):
 	pygame.init()
 	tela = pygame.display.set_mode((config.width, config.height))
 	pygame.display.set_caption(config.title)
@@ -29,36 +30,49 @@ def createWindow(config):
 
 def main():
 	timer = 0
-	last_time = pygame.time.get_ticks()
+	lastTime = pygame.time.get_ticks()
 
 	config = Config("Alien Invasion v6", 1000, 800)
-	tela = createWindow(config)
+	tela = create_window(config)
 
-	player = Ship(10)
+	player = Ship(vec2(config.width / 2, config.height / 2))
+
+	enemyHandler = EnemyHandler()
 
 	isRunning = True
 
 	while isRunning:
 		now = pygame.time.get_ticks()
-		config.delta = now - last_time
+		config.delta = now - lastTime
 
 		# O InputManager.poll_events() retorna se a tela deve fechar ou não
 		isRunning = not InputManager.poll_events()
 
-		# # Lógica do spawn de inimigos
-		# if timer > 3000:
-		# 	inimigos.append(Alien(pygame.Vector2(config.width - 10, config.height - 10)))
+		for inimigo in enemyHandler.enemies:
+			if not inimigo: continue
+			# Checar se colidiu com tiro
+			for tiro in player.tiros:
+				if not tiro: continue
+				if inimigo.rect.colliderect(tiro.rect):
+					enemyHandler.remove_enemy(inimigo)
+					player.remove_tiro(tiro)
+					break
+			# Checar se colidiu com player
+			if inimigo.rect.colliderect(player.rect):
+				config.player_morto = True
+
+		timer += config.delta
+
+		config.player_pos = player.get_pos()
 
 		player.atualiza(config)
 		player.desenha(tela)
 
-		# Atualiza os inimigos
-		for alien in inimigos:
-			alien.atualiza(config)
+		# Lida com a lógica de spawn e atualiza inimigos
+		enemyHandler.atualiza(config)
 
-		# Renderiza eles os inimigos
-		for alien in inimigos:
-			alien.desenha(tela)
+		# Renderiza os inimigos
+		enemyHandler.desenha(tela)
 
 		# Troca o screen buffer
 		pygame.display.flip()
@@ -67,7 +81,7 @@ def main():
 		tela.fill((0,0,0))
 
 		clock.tick(30)
-		last_time = now
+		lastTime = now
 
 	pygame.quit()
 
