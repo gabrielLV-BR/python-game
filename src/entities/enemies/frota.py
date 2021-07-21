@@ -1,68 +1,91 @@
 # Uma frota é um bando de DumbAliens que seguem o líder, que seria o primeiro na lista.
 # O lider sempre quer cercar o jogador.
-
-from pygame import Vector2 as vec2
+from random import randint
+from typing import cast
+from pygame import Vector2 as vec2, mouse
+import pygame
+from entities.bullet import Bullet
 
 from entities.enemies.dumb_alien import DumbAlien
+
 from utils.config import Config
+from utils.input_manager import InputManager
+
+from enums import ShipStates
+
 
 class Frota:
-    def __init__(self, pos: vec2, count: int, speed: float = 3.0):
+    def __init__(self, count: int, speed: float = 6.0):
         if count < 2:
             count = 2
 
         self.SPEED = speed
+        self.MIN_TARGET_DISTANCE = 3
 
-        self.enemies = ([DumbAlien(pos, speed)] * count)
+        self.enemies = []
 
-        self.target = pos
-        self.vel = vec2(10, 10)
+        for i in range(count):
+            self.enemies.append(
+                DumbAlien(vec2(-10, -10), self.SPEED, randint(2, 5) * 1000))
 
-        self.iter = 0
+        self.rotate_around = 0
 
     def atualiza(self, config: Config):
-        # distance_to_target = self.target - self.enemies[0].get_pos()
-        # if distance_to_target.magnitude() < 2:
-        #     self.get_new_target(config)
+        for i in range(0, len(self.enemies)):
+            enemy = self.enemies[i]
+            if not enemy:
+                continue
+            elif enemy.pode_ir():
+                self.enemies[i] = None
+            elif enemy.esta_posicionado and enemy.state == ShipStates.READY:
+                self.calcular_posicao(i, config)
+                enemy.state = ShipStates.SET
 
-        self.segue_o_lider()
+            enemy.atualiza(config)
 
-        self.enemies[0].rect.centerx += self.vel.x
-        self.enemies[0].rect.centery += self.vel.y
+    def esta_colidindo(self, alvo: pygame.Rect):
+        for enemy in [x for x in self.enemies if x]:
+            if enemy.rect.colliderect(alvo) and not enemy.morto:
+                return enemy
+        return None
 
-        self.get_new_target(config)
+    def calcular_posicao(self, index: int, config: Config):
+        enemy = self.enemies[index]
+        step = 360 / len(self.enemies)
+        enemy_angle = step * index
+        enemy_pos = vec2(0, 0)
+        enemy_pos.from_polar((400, enemy_angle))
+
+        enemy_pos += vec2(config.width / 2, config.height / 2)
+
+        enemy.set_pos(enemy_pos * -1.5)
+        enemy.set_next_position(enemy_pos)
+        enemy.set_target(config.player_pos)
 
     def desenha(self, tela):
-        print(f"ITER Nº {self.iter}")
         for enemy in self.enemies:
-            if not enemy: continue
-            print(enemy._target)
-            self.iter += 1
-            enemy.desenha(tela)
-        print("-"*6)
-
-    def segue_o_lider(self):
-        for i in range(len(self.enemies)-1, 0, -1):
-            proximo = self.enemies[i-1]
-            if proximo == None:
+            if not enemy:
                 continue
-            self.enemies[i].set_target(proximo.get_pos())
-            
-    def get_new_target(self, config: Config):
-        to_player = config.player_pos - self.enemies[0].get_pos()
-        self.target = config.player_pos
-        self.vel = to_player.normalize() * self.SPEED
-        # to_player = config.player_pos - self.enemies[0].get_pos()
-        # new_target = to_player.rotate(20)
-        # to_new_target = new_target - self.enemies[0].get_pos()
+            enemy.desenha(tela)
 
-        # mag = to_new_target.magnitude()
-        # if mag != 0:
-        #     to_new_target /= mag
+    def pode_ir(self):
+        return self.enemies.count(None) == len(self.enemies)
 
-        # self.vel = to_new_target
+    def kill_enemy(self, enemy):
+        try:
+            indice = self.enemies.index(enemy)
+            self.enemies[indice].morre()
+        finally:
+            return
 
-    # De novo, peguei do ship.py
+    # Fiz uma property para poder só usar um enemy.tiros no enemy_handler
+    @property
+    def tiros(self) -> list[Bullet]:
+        tiros = []
+        for enemy in [x for x in self.enemies if x]:
+            tiros.extend(enemy.tiros)
+        return tiros
+
     def remove_enemy(self, enemy):
         for i in range(len(self.enemies)):
             if self.enemies[i] == None:
